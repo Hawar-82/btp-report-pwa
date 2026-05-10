@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BTP Report">
+<meta name="theme-color" content="#0f1419">
+<title>BTP Report</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700;900&display=swap');
+
+  :root {
+    --bg: #0f1419;
+    --bg2: #161c24;
+    --panel: #1c232c;
+    --panel2: #232b35;
+    --line: #2a3340;
+    --line2: #3a4554;
+    --text: #e8ecf1;
+    --text2: #a3acba;
+    --text3: #6b7785;
+    --orange: #ff6b1a;
+    --orange2: #ff8847;
+    --yellow: #ffc940;
+    --green: #4ade80;
+    --red: #ef4444;
+    --blue: #38bdf8;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow: hidden;
+  }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: -webkit-fill-available;
+    overflow: hidden;
+  }
+
+  /* ---- SCREENS ---- */
+  .screen {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  /* ---- HEADER ---- */
+  .header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: calc(var(--safe-top) + 12px) 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .header-brand { display: flex; align-items: center; gap: 8px; }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--bg);
+  }
+  .header-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; }
+  .header-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1px; }
+  .header-title {
+    flex: 1; text-align: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--text);
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    background: var(--panel2); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text);
+    flex-shrink: 0;
+  }
+  .header-action { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+  .add-btn {
+    width: 36px; height: 36px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 22px; color: var(--bg); font-weight: 900;
+  }
+
+  /* ---- SCROLL CONTENT ---- */
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(80px + var(--safe-bottom));
+  }
+  .scroll-content.no-tabs { padding-bottom: 16px; }
+
+  /* ---- BOTTOM TABS ---- */
+  .bottom-tabs {
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    padding-bottom: var(--safe-bottom);
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 10px 0; cursor: pointer; gap: 4px;
+    opacity: 0.4; transition: opacity 0.2s;
+  }
+  .tab-btn.active { opacity: 1; }
+  .tab-btn.active .tab-label { color: var(--orange); }
+  .tab-icon { font-size: 20px; }
+  .tab-label { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; }
+  .tab-rec-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--orange); margin-top: -20px;
+    border: 4px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 22px; flex-shrink: 0;
+  }
+
+  /* ---- CARDS ---- */
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 12px; margin-bottom: 8px; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .card:active { border-color: var(--orange); }
+  .card-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+  .card-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .card-addr { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .card-footer {
+    display: flex; justify-content: space-between;
+    border-top: 1px solid var(--line); margin-top: 8px; padding-top: 8px;
+  }
+  .card-footer span { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
+
+  /* ---- STATUS CHIP ---- */
+  .chip {
+    padding: 3px 8px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;
+  }
+  .chip-orange { background: rgba(255,107,26,0.18); color: var(--orange2); }
+  .chip-green { background: rgba(74,222,128,0.15); color: var(--green); }
+  .chip-yellow { background: rgba(255,201,64,0.15); color: var(--yellow); }
+  .chip-blue { background: rgba(56,189,248,0.15); color: var(--blue); }
+  .chip-gray { background: rgba(107,119,133,0.2); color: var(--text2); }
+  .chip-red { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* ---- SECTION LABEL ---- */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    letter-spacing: 2px; padding: 16px 16px 8px;
+  }
+
+  /* ---- STATS ROW ---- */
+  .stats-row { display: flex; gap: 8px; padding: 0 16px 16px; }
+  .stat-box {
+    flex: 1; background: var(--panel2); border: 1px solid var(--line); padding: 12px;
+  }
+  .stat-val { font-size: 28px; font-weight: 900; color: var(--text); }
+  .stat-val.orange { color: var(--orange); }
+  .stat-lbl { font-size: 9px; color: var(--text3); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* ---- HERO ---- */
+  .hero { padding: 20px 16px 16px; }
+  .hero-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 2px; margin-bottom: 4px; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--text); line-height: 1; }
+  .hero-sub { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--orange); line-height: 1; }
+  .hero-date { font-size: 13px; color: var(--text2); margin-top: 6px; }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 20px; cursor: pointer; border: none; outline: none;
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1.5px;
+    transition: opacity 0.2s, transform 0.1s;
+    width: 100%;
+  }
+  .btn:active { opacity: 0.8; transform: scale(0.98); }
+  .btn-primary { background: var(--orange); color: var(--bg); }
+  .btn-ghost { background: var(--panel2); border: 1px solid var(--line2); color: var(--text); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-large { padding: 18px 24px; font-size: 18px; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+  .btn:disabled { opacity: 0.4; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row .btn { flex: 1; }
+
+  /* ---- INPUTS ---- */
+  .field { margin-bottom: 12px; }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text3); letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 6px; display: block;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; background: var(--bg2); border: 1px solid var(--line2);
+    color: var(--text); padding: 10px 12px; font-size: 14px; font-family: 'Inter', sans-serif;
+    outline: none; appearance: none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--orange); }
+  .field textarea { min-height: 80px; resize: vertical; }
+  .field select option { background: var(--panel); }
+
+  /* ---- CHIPS SELECTOR ---- */
+  .chips-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .chip-sel {
+    background: var(--panel2); border: 1px solid var(--line);
+    padding: 6px 10px; font-size: 12px; color: var(--text2); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip-sel.selected { background: var(--orange); border-color: var(--orange); color: var(--bg); font-weight: 700; }
+
+  /* ---- FORM SECTION ---- */
+  .form-wrap { padding: 16px; }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 48px 24px; gap: 12px;
+  }
+  .empty-icon { font-size: 40px; }
+  .empty-title { color: var(--text2); font-size: 14px; font-weight: 600; }
+  .empty-desc { color: var(--text3); font-size: 12px; text-align: center; max-width: 250px; }
+
+  /* ---- LIST ---- */
+  .list-wrap { padding: 0 16px; }
+
+  /* ---- RECORDER ---- */
+  .recorder-center {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 24px; padding: 24px;
+  }
+  .timer-circle {
+    width: 220px; height: 220px; border-radius: 50%;
+    border: 4px solid var(--line2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: border-color 0.3s;
+  }
+  .timer-circle.recording { border-color: var(--orange); }
+  .timer-display {
+    font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 700;
+    color: var(--text2); letter-spacing: 2px; transition: color 0.3s;
+  }
+  .timer-circle.recording .timer-display { color: var(--orange); }
+  .timer-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--text3); letter-spacing: 3px; margin-top: 8px;
+  }
+  .rec-controls { display: flex; gap: 8px; width: 100%; }
+  .rec-controls .btn { flex: 1; }
+
+  /* ---- PROCESSING ---- */
+  .processing-center {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; padding: 24px;
+  }
+  .spinner {
+    width: 48px; height: 48px; border: 4px solid var(--line2);
+    border-top-color: var(--orange); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .steps-list { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .step-item {
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 12px; display: flex; align-items: center; gap: 12px; opacity: 0.4;
+    transition: opacity 0.3s, border-color 0.3s;
+  }
+  .step-item.done { opacity: 1; border-color: var(--green); }
+  .step-item.active { opacity: 1; border-color: var(--orange); }
+  .step-num {
+    width: 32px; height: 32px; background: var(--panel2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .step-item.done .step-num { background: var(--green); color: var(--bg); }
+  .step-lbl { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .step-item.done .step-lbl, .step-item.active .step-lbl { color: var(--text); }
+
+  /* ---- REPORT ---- */
+  .report-header { background: var(--panel); border: 1px solid var(--line); margin: 16px; padding: 16px; }
+  .report-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--orange); letter-spacing: 2px; margin-bottom: 6px; }
+  .report-title { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 12px; }
+  .report-meta { display: flex; flex-wrap: wrap; }
+  .meta-cell { width: 50%; margin-bottom: 8px; }
+  .meta-key { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1px; }
+  .meta-val { font-size: 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+  .report-tabs { display: flex; border-bottom: 1px solid var(--line); margin: 0 16px; }
+  .report-tab {
+    flex: 1; padding: 12px 0; text-align: center; cursor: pointer;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text3);
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s;
+  }
+  .report-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+  .report-content { padding: 16px; }
+  .report-section { margin-bottom: 20px; }
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .section-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--orange); font-weight: 900; }
+  .section-title { font-size: 13px; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 1px; flex: 1; }
+  .section-line { flex: 1; height: 1px; background: var(--line); }
+  .section-text { font-size: 13px; color: var(--text2); line-height: 20px; }
+  .section-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .section-list li { display: flex; gap: 8px; }
+  .section-list li::before { content: '▸'; color: var(--orange); font-size: 11px; margin-top: 3px; flex-shrink: 0; }
+  .action-card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-left: 3px solid var(--orange); padding: 12px; margin-bottom: 8px;
+  }
+  .action-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .action-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .action-chips { display: flex; gap: 6px; margin-top: 8px; }
+  .transcript-box { background: var(--panel2); border: 1px solid var(--line); padding: 12px; }
+  .transcript-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text2); line-height: 18px; white-space: pre-wrap; }
+
+  /* ---- LOGIN ---- */
+  .login-wrap {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .login-logo-wrap { margin-bottom: 36px; text-align: center; }
+  .login-logo {
+    width: 64px; height: 64px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--bg);
+    margin: 0 auto 12px;
+  }
+  .login-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; }
+  .login-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 2px; margin-top: 4px; }
+  .login-form { width: 100%; max-width: 360px; }
+  .login-switch { text-align: center; margin-top: 24px; font-size: 13px; color: var(--text2); }
+  .login-switch a { color: var(--orange); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+  /* ---- ALERT ---- */
+  .alert {
+    position: fixed; top: calc(var(--safe-top) + 60px); left: 16px; right: 16px;
+    padding: 12px 16px; font-size: 13px; font-weight: 600; z-index: 999;
+    animation: slideDown 0.3s ease; border-left: 4px solid;
+  }
+  .alert-success { background: rgba(74,222,128,0.15); color: var(--green); border-color: var(--green); }
+  .alert-error { background: rgba(239,68,68,0.15); color: var(--red); border-color: var(--red); }
+  @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* ---- CONSENT ---- */
+  .consent-wrap {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px; text-align: center;
+  }
+  .consent-icon {
+    width: 80px; height: 80px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; font-weight: 900; color: var(--bg); margin-bottom: 24px;
+  }
+  .consent-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; margin-bottom: 16px; }
+  .consent-text { font-size: 14px; color: var(--text2); line-height: 22px; max-width: 320px; margin-bottom: 8px; }
+  .consent-legal { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 2px; margin-bottom: 32px; }
+  .cancel-link { color: var(--text3); font-size: 13px; cursor: pointer; margin-top: 16px; text-decoration: underline; }
+
+  /* ---- AVATAR ---- */
+  .avatar {
+    width: 48px; height: 48px; background: var(--bg2);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; color: var(--orange); flex-shrink: 0;
+  }
+
+  /* ---- LOADING ---- */
+  #loading-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    z-index: 9999;
+  }
+  #loading-screen .login-logo { margin: 0; }
+
+  /* ---- SETTINGS ---- */
+  .settings-card { background: var(--panel); border: 1px solid var(--line); padding: 16px; margin: 0 16px 12px; }
+  .settings-title { font-size: 16px; font-weight: 900; letter-spacing: 1.5px; margin-bottom: 12px; }
+  .settings-row {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-key { font-size: 13px; color: var(--text3); }
+  .settings-val { font-size: 13px; color: var(--text); }
+  .version-text { text-align: center; color: var(--text3); font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 24px; padding-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="login-logo">B</div>
+  <div class="spinner"></div>
+</div>
+
+<div id="app">
+
+  <!-- ==================== LOGIN ==================== -->
+  <div class="screen" id="screen-login">
+    <div class="login-wrap">
+      <div class="login-logo-wrap">
+        <div class="login-logo">B</div>
+        <div class="login-title">BTP REPORT</div>
+        <div class="login-sub">// COMPTES RENDUS DE CHANTIER</div>
+      </div>
+      <div class="login-form">
+        <div class="section-label">// CONNEXION</div>
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input type="email" id="login-email" placeholder="contact@entreprise.fr" autocomplete="email">
+        </div>
+        <div class="field">
+          <label class="field-label">Mot de passe</label>
+          <input type="password" id="login-password" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-large" id="btn-login">SE CONNECTER</button>
+        <div class="login-switch">
+          Pas encore de compte ? <a onclick="showSignup()">S'inscrire</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SIGNUP ==================== -->
+  <div class="screen" id="screen-signup">
+    <div class="login-wrap">
+      <div class="login-logo-wrap">
+        <div class="login-logo">B</div>
+        <div class="login-title">BTP REPORT</div>
+        <div class="login-sub">// CRÉER UN COMPTE</div>
+      </div>
+      <div class="login-form">
+        <div class="field">
+          <label class="field-label">Nom complet</label>
+          <input type="text" id="signup-name" placeholder="Jean Dupont">
+        </div>
+        <div class="field">
+          <label class="field-label">Email professionnel</label>
+          <input type="email" id="signup-email" placeholder="contact@entreprise.fr" autocomplete="email">
+        </div>
+        <div class="field">
+          <label class="field-label">Mot de passe (6 caractères min.)</label>
+          <input type="password" id="signup-password" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-large" id="btn-signup">CRÉER MON COMPTE</button>
+        <div class="login-switch">
+          Déjà un compte ? <a onclick="showLogin()">Se connecter</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HOME ==================== -->
+  <div class="screen" id="screen-home">
+    <div class="header">
+      <div class="header-brand">
+        <div class="header-logo">B</div>
+        <div>
+          <div class="header-name">BTP REPORT</div>
+          <div class="header-tag">// CHANTIER · IA</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-content" id="home-scroll">
+      <div class="hero">
+        <div class="hero-tag">// TABLEAU DE BORD</div>
+        <div class="hero-title">Bonjour,</div>
+        <div class="hero-sub">Chef de chantier</div>
+        <div class="hero-date" id="home-date"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val orange" id="stat-active">0</div><div class="stat-lbl">Chantiers actifs</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-reports">0</div><div class="stat-lbl">Rapports</div></div>
+        <div class="stat-box"><div class="stat-val" id="stat-clients">0</div><div class="stat-lbl">Clients</div></div>
+      </div>
+      <div style="padding: 0 16px 8px;">
+        <button class="btn btn-primary btn-large" onclick="showNewMeeting()">🎙️ NOUVELLE RÉUNION</button>
+        <div class="btn-row" style="margin-top: 8px;">
+          <button class="btn btn-ghost" onclick="showNewProject()">+ Projet</button>
+          <button class="btn btn-ghost" onclick="showNewClient()">+ Client</button>
+        </div>
+      </div>
+      <div class="section-label">// CHANTIERS RÉCENTS</div>
+      <div class="list-wrap" id="home-projects"></div>
+      <div class="section-label" id="home-meetings-label" style="display:none">// COMPTES RENDUS RÉCENTS</div>
+      <div class="list-wrap" id="home-meetings"></div>
+    </div>
+    <div class="bottom-tabs" id="main-tabs">
+      <div class="tab-btn active" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label">Accueil</div></div>
+      <div class="tab-btn" onclick="switchTab('clients')"><div class="tab-icon">👥</div><div class="tab-label">Clients</div></div>
+      <div class="tab-rec-btn" onclick="showNewMeeting()">🎙️</div>
+      <div class="tab-btn" onclick="switchTab('projects')"><div class="tab-icon">📁</div><div class="tab-label">Projets</div></div>
+      <div class="tab-btn" onclick="switchTab('settings')"><div class="tab-icon">⚙️</div><div class="tab-label">Réglages</div></div>
+    </div>
+  </div>
+
+  <!-- ==================== CLIENTS ==================== -->
+  <div class="screen" id="screen-clients">
+    <div class="header">
+      <div class="header-title">CLIENTS</div>
+      <div class="add-btn" onclick="showNewClient()">+</div>
+    </div>
+    <div class="scroll-content" id="clients-scroll">
+      <div class="list-wrap" id="clients-list"></div>
+    </div>
+    <div class="bottom-tabs">
+      <div class="tab-btn" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label">Accueil</div></div>
+      <div class="tab-btn active" onclick="switchTab('clients')"><div class="tab-icon">👥</div><div class="tab-label">Clients</div></div>
+      <div class="tab-rec-btn" onclick="showNewMeeting()">🎙️</div>
+      <div class="tab-btn" onclick="switchTab('projects')"><div class="tab-icon">📁</div><div class="tab-label">Projets</div></div>
+      <div class="tab-btn" onclick="switchTab('settings')"><div class="tab-icon">⚙️</div><div class="tab-label">Réglages</div></div>
+    </div>
+  </div>
+
+  <!-- ==================== PROJECTS ==================== -->
+  <div class="screen" id="screen-projects">
+    <div class="header">
+      <div class="header-title">PROJETS</div>
+      <div class="add-btn" onclick="showNewProject()">+</div>
+    </div>
+    <div class="scroll-content" id="projects-scroll">
+      <div class="list-wrap" id="projects-list"></div>
+    </div>
+    <div class="bottom-tabs">
+      <div class="tab-btn" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label">Accueil</div></div>
+      <div class="tab-btn" onclick="switchTab('clients')"><div class="tab-icon">👥</div><div class="tab-label">Clients</div></div>
+      <div class="tab-rec-btn" onclick="showNewMeeting()">🎙️</div>
+      <div class="tab-btn active" onclick="switchTab('projects')"><div class="tab-icon">📁</div><div class="tab-label">Projets</div></div>
+      <div class="tab-btn" onclick="switchTab('settings')"><div class="tab-icon">⚙️</div><div class="tab-label">Réglages</div></div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS ==================== -->
+  <div class="screen" id="screen-settings">
+    <div class="header"><div class="header-title">RÉGLAGES</div></div>
+    <div class="scroll-content" id="settings-scroll">
+      <div style="height:16px"></div>
+      <div class="settings-card">
+        <div class="settings-title">COMPTE</div>
+        <div class="settings-row"><span class="settings-key">Email</span><span class="settings-val" id="settings-email">—</span></div>
+      </div>
+      <div class="settings-card">
+        <div class="settings-title">IA</div>
+        <div class="settings-row"><span class="settings-key">Transcription</span><span class="settings-val">Whisper</span></div>
+        <div class="settings-row"><span class="settings-key">Analyse</span><span class="settings-val">GPT-4o</span></div>
+        <div class="settings-row"><span class="settings-key">Bilingue FR/ES</span><span class="settings-val">Activé</span></div>
+      </div>
+      <div style="padding: 0 16px;">
+        <button class="btn btn-danger" onclick="handleSignOut()">SE DÉCONNECTER</button>
+      </div>
+      <div class="version-text">BTP Report PWA v1.0 · Master Crafters BTP</div>
+    </div>
+    <div class="bottom-tabs">
+      <div class="tab-btn" onclick="switchTab('home')"><div class="tab-icon">🏠</div><div class="tab-label">Accueil</div></div>
+      <div class="tab-btn" onclick="switchTab('clients')"><div class="tab-icon">👥</div><div class="tab-label">Clients</div></div>
+      <div class="tab-rec-btn" onclick="showNewMeeting()">🎙️</div>
+      <div class="tab-btn" onclick="switchTab('projects')"><div class="tab-icon">📁</div><div class="tab-label">Projets</div></div>
+      <div class="tab-btn active" onclick="switchTab('settings')"><div class="tab-icon">⚙️</div><div class="tab-label">Réglages</div></div>
+    </div>
+  </div>
+
+  <!-- ==================== NEW CLIENT ==================== -->
+  <div class="screen" id="screen-new-client">
+    <div class="header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="header-title">NOUVEAU CLIENT</div>
+      <div class="header-action"></div>
+    </div>
+    <div class="scroll-content no-tabs">
+      <div class="form-wrap">
+        <div class="field"><label class="field-label">Nom *</label><input type="text" id="nc-name" placeholder="Nom du client"></div>
+        <label class="field-label">Type</label>
+        <div class="chips-group" id="nc-type-chips"></div>
+        <div class="field"><label class="field-label">Téléphone</label><input type="tel" id="nc-phone"></div>
+        <div class="field"><label class="field-label">Email</label><input type="email" id="nc-email"></div>
+        <div class="field"><label class="field-label">Adresse</label><textarea id="nc-address"></textarea></div>
+        <div class="field"><label class="field-label">Notes</label><textarea id="nc-notes"></textarea></div>
+        <button class="btn btn-primary btn-large" id="btn-save-client" onclick="saveClient()">ENREGISTRER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NEW PROJECT ==================== -->
+  <div class="screen" id="screen-new-project">
+    <div class="header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="header-title">NOUVEAU PROJET</div>
+      <div class="header-action"></div>
+    </div>
+    <div class="scroll-content no-tabs">
+      <div class="form-wrap">
+        <div class="field"><label class="field-label">Nom du projet *</label><input type="text" id="np-name"></div>
+        <label class="field-label">Client *</label>
+        <div class="chips-group" id="np-client-chips"></div>
+        <div class="field"><label class="field-label">Adresse</label><textarea id="np-address"></textarea></div>
+        <label class="field-label">Type</label>
+        <div class="chips-group" id="np-type-chips"></div>
+        <label class="field-label">Statut</label>
+        <div class="chips-group" id="np-status-chips"></div>
+        <div class="field"><label class="field-label">Date de début</label><input type="date" id="np-start"></div>
+        <div class="field"><label class="field-label">Date de fin prévue</label><input type="date" id="np-end"></div>
+        <div class="field"><label class="field-label">Budget estimé (€)</label><input type="number" id="np-budget"></div>
+        <div class="field"><label class="field-label">Notes</label><textarea id="np-notes"></textarea></div>
+        <button class="btn btn-primary btn-large" onclick="saveProject()">CRÉER LE PROJET</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NEW MEETING ==================== -->
+  <div class="screen" id="screen-new-meeting">
+    <div class="header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="header-title">NOUVELLE RÉUNION</div>
+      <div class="header-action"></div>
+    </div>
+    <div class="scroll-content no-tabs">
+      <div class="form-wrap">
+        <label class="field-label">Projet *</label>
+        <div class="chips-group" id="nm-project-chips"></div>
+        <label class="field-label">Type de réunion</label>
+        <div class="chips-group" id="nm-type-chips"></div>
+        <div class="field"><label class="field-label">Titre *</label><input type="text" id="nm-title" placeholder="Ex: Point hebdomadaire SDB"></div>
+        <div class="field"><label class="field-label">Date</label><input type="date" id="nm-date"></div>
+        <div class="field"><label class="field-label">Lieu</label><input type="text" id="nm-location"></div>
+        <div class="field"><label class="field-label">Participants (séparés par virgule)</label><textarea id="nm-participants"></textarea></div>
+        <button class="btn btn-primary btn-large" onclick="proceedToConsent()">DÉMARRER L'ENREGISTREMENT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CONSENT ==================== -->
+  <div class="screen" id="screen-consent">
+    <div class="header">
+      <div class="back-btn" onclick="showScreen('screen-new-meeting')">←</div>
+      <div class="header-title">CONSENTEMENT</div>
+      <div class="header-action"></div>
+    </div>
+    <div class="consent-wrap">
+      <div class="consent-icon">!</div>
+      <div class="consent-title">CONSENTEMENT REQUIS</div>
+      <p class="consent-text">
+        Pensez à <strong style="color:var(--orange)">informer les participants</strong> et à
+        <strong style="color:var(--orange)">obtenir leur accord</strong> avant d'enregistrer cette conversation.
+      </p>
+      <div class="consent-legal">RGPD · Article 6</div>
+      <button class="btn btn-primary btn-large" onclick="startRecording()">J'AI INFORMÉ LES PARTICIPANTS</button>
+      <div class="cancel-link" onclick="showScreen('screen-new-meeting')">Annuler</div>
+    </div>
+  </div>
+
+  <!-- ==================== RECORDER ==================== -->
+  <div class="screen" id="screen-recorder">
+    <div class="header">
+      <div class="header-title">ENREGISTREMENT</div>
+    </div>
+    <div class="recorder-center">
+      <div class="timer-circle" id="timer-circle">
+        <div class="timer-display" id="timer-display">00:00:00</div>
+        <div class="timer-status" id="timer-status">PRÊT</div>
+      </div>
+      <div id="recorder-error" style="color:var(--red);font-size:13px;display:none;text-align:center;"></div>
+      <div class="rec-controls">
+        <button class="btn btn-ghost" id="btn-pause-resume" onclick="togglePause()">PAUSE</button>
+        <button class="btn btn-danger" onclick="confirmStop()">ARRÊTER</button>
+      </div>
+      <div class="cancel-link" onclick="cancelRecording()">Annuler l'enregistrement</div>
+    </div>
+  </div>
+
+  <!-- ==================== PROCESSING ==================== -->
+  <div class="screen" id="screen-processing">
+    <div class="header"><div class="header-title">TRAITEMENT IA</div></div>
+    <div class="processing-center">
+      <div class="spinner"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;">ANALYSE EN COURS</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:2px;">// Patientez quelques secondes</div>
+      <div class="steps-list">
+        <div class="step-item" id="step-1"><div class="step-num">01</div><div class="step-lbl">Upload audio</div></div>
+        <div class="step-item" id="step-2"><div class="step-num">02</div><div class="step-lbl">Transcription Whisper</div></div>
+        <div class="step-item" id="step-3"><div class="step-num">03</div><div class="step-lbl">Analyse IA (GPT-4)</div></div>
+        <div class="step-item" id="step-4"><div class="step-num">04</div><div class="step-lbl">Compte rendu prêt</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REPORT ==================== -->
+  <div class="screen" id="screen-report">
+    <div class="header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div class="header-title">COMPTE RENDU</div>
+      <div class="header-action"></div>
+    </div>
+    <div class="scroll-content no-tabs">
+      <div class="report-header" id="report-header"></div>
+      <div class="report-tabs">
+        <div class="report-tab active" onclick="switchReportTab('rapport', this)">RAPPORT</div>
+        <div class="report-tab" onclick="switchReportTab('actions', this)" id="actions-tab-btn">ACTIONS</div>
+        <div class="report-tab" onclick="switchReportTab('transcription', this)">TRANSCRIPTION</div>
+      </div>
+      <div class="report-content" id="report-tab-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+// ============================================================
+// CONFIG — remplace avec tes valeurs Supabase
+// ============================================================
+const SUPABASE_URL = 'https://lcmfsjgbvknaqfhemdvv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjbWZzamdidmtuYXFmaGVtZHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NjA0NDksImV4cCI6MjA5MzIzNjQ0OX0.40UEyWoULuJViY_oWLYso1NiBxjZPc-WaLkeVQ2u47U';
+
+// ============================================================
+// SUPABASE LIGHT CLIENT
+// ============================================================
+const sb = {
+  headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+  authHeaders() {
+    const token = localStorage.getItem('sb_token');
+    return { ...this.headers, 'Authorization': `Bearer ${token || SUPABASE_ANON_KEY}` };
+  },
+  async signIn(email, password) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST', headers: this.headers,
+      body: JSON.stringify({ email, password })
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error_description || d.error);
+    localStorage.setItem('sb_token', d.access_token);
+    localStorage.setItem('sb_user', JSON.stringify(d.user));
+    return d;
+  },
+  async signUp(email, password, fullName) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST', headers: this.headers,
+      body: JSON.stringify({ email, password, data: { full_name: fullName } })
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error_description || d.error);
+    if (d.access_token) {
+      localStorage.setItem('sb_token', d.access_token);
+      localStorage.setItem('sb_user', JSON.stringify(d.user));
+    }
+    return d;
+  },
+  signOut() { localStorage.removeItem('sb_token'); localStorage.removeItem('sb_user'); },
+  getUser() { try { return JSON.parse(localStorage.getItem('sb_user')); } catch { return null; } },
+  async from(table) { return new SbQuery(table, this); },
+  async rpc(fn, params) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST', headers: this.authHeaders(),
+      body: JSON.stringify(params)
+    });
+    return r.json();
+  },
+  async uploadStorage(bucket, path, blob) {
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${localStorage.getItem('sb_token')}`, 'Content-Type': blob.type },
+      body: blob
+    });
+    if (!r.ok) { const e = await r.json(); throw new Error(e.error || 'Upload failed'); }
+    return path;
+  },
+  async invokeFunction(name, body) {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${localStorage.getItem('sb_token')}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) { const e = await r.json(); throw new Error(e.error || 'Function error'); }
+    return r.json();
+  }
+};
+
+class SbQuery {
+  constructor(table, client) { this.table = table; this.client = client; this._filters = []; this._order = ''; this._single = false; }
+  select(cols = '*') { this._select = cols; return this; }
+  eq(col, val) { this._filters.push(`${col}=eq.${val}`); return this; }
+  order(col, { ascending } = { ascending: false }) { this._order = `&order=${col}.${ascending ? 'asc' : 'desc'}`; return this; }
+  single() { this._single = true; return this; }
+  maybeSingle() { this._single = true; return this; }
+  async execute() {
+    const q = this._filters.join('&');
+    const url = `${SUPABASE_URL}/rest/v1/${this.table}?select=${this._select || '*'}${q ? '&' + q : ''}${this._order}`;
+    const headers = { ...this.client.authHeaders(), 'Accept': this._single ? 'application/vnd.pgrst.object+json' : 'application/json' };
+    const r = await fetch(url, { headers });
+    if (!r.ok) { const e = await r.json(); return { data: null, error: e }; }
+    const data = await r.json();
+    return { data, error: null };
+  }
+  async insert(rows) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${this.table}`, {
+      method: 'POST',
+      headers: { ...this.client.authHeaders(), 'Prefer': 'return=representation' },
+      body: JSON.stringify(Array.isArray(rows) ? rows : [rows])
+    });
+    if (!r.ok) { const e = await r.json(); return { data: null, error: e }; }
+    const data = await r.json();
+    return { data: Array.isArray(rows) ? data : data[0], error: null };
+  }
+  async update(patch) {
+    const q = this._filters.join('&');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${this.table}?${q}`, {
+      method: 'PATCH',
+      headers: { ...this.client.authHeaders(), 'Prefer': 'return=representation' },
+      body: JSON.stringify(patch)
+    });
+    if (!r.ok) { const e = await r.json(); return { data: null, error: e }; }
+    const data = await r.json();
+    return { data: data[0] || data, error: null };
+  }
+  async delete() {
+    const q = this._filters.join('&');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${this.table}?${q}`, {
+      method: 'DELETE', headers: this.client.authHeaders()
+    });
+    return { error: r.ok ? null : await r.json() };
+  }
+}
+
+// Helper para hacer queries
+async function query(table) { return new SbQuery(table, sb); }
+
+// ============================================================
+// ENUMS
+// ============================================================
+const CLIENT_TYPES = ['particulier','entreprise','architecte','syndic','agence_immobiliere','autre'];
+const PROJECT_TYPES = ['appartement','maison','cuisine','salle_de_bains','renovation_complete','electricite','plomberie','peinture','sols','isolation','autre'];
+const PROJECT_STATUSES = ['prospect','devis_en_cours','valide','chantier_en_cours','en_pause','termine','archive'];
+const MEETING_TYPES = ['visite_initiale','releve_technique','reunion_client','reunion_chantier','reunion_artisans','reception_travaux','sav_probleme','autre'];
+
+const LABELS = {
+  particulier:'Particulier', entreprise:'Entreprise', architecte:'Architecte', syndic:'Syndic', agence_immobiliere:'Agence immobilière', autre:'Autre',
+  appartement:'Appartement', maison:'Maison', cuisine:'Cuisine', salle_de_bains:'Salle de bains', renovation_complete:'Rénovation complète', electricite:'Électricité', plomberie:'Plomberie', peinture:'Peinture', sols:'Sols', isolation:'Isolation',
+  prospect:'Prospect', devis_en_cours:'Devis en cours', valide:'Validé', chantier_en_cours:'Chantier en cours', en_pause:'En pause', termine:'Terminé', archive:'Archivé',
+  visite_initiale:'Visite initiale', releve_technique:'Relevé technique', reunion_client:'Réunion client', reunion_chantier:'Réunion de chantier', reunion_artisans:'Réunion artisans', reception_travaux:'Réception travaux', sav_probleme:'SAV / problème',
+  pendiente:'À faire', en_curso:'En cours', terminado:'Terminé', bloqueado:'Bloqué',
+  baja:'Basse', media:'Moyenne', alta:'Haute', urgente:'Urgente',
+};
+const lbl = k => LABELS[k] || k;
+
+const STATUS_CHIP = {
+  prospect:'chip-blue', devis_en_cours:'chip-yellow', valide:'chip-orange',
+  chantier_en_cours:'chip-orange', termine:'chip-green', en_pause:'chip-gray', archive:'chip-gray',
+  baja:'chip-gray', media:'chip-yellow', alta:'chip-red', urgente:'chip-red',
+  pendiente:'chip-orange', en_curso:'chip-yellow', terminado:'chip-green', bloqueado:'chip-red',
+};
+const chipClass = s => STATUS_CHIP[s] || 'chip-gray';
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  user: null, clients: [], projects: [], meetings: [],
+  selectedClientType: 'particulier',
+  selectedProjectType: 'renovation_complete',
+  selectedProjectStatus: 'prospect',
+  selectedMeetingType: 'reunion_chantier',
+  selectedProjectId: null,
+  selectedClientId: null,
+  currentMeetingId: null,
+  currentMeeting: null,
+  prevScreen: 'screen-home',
+  reportMeeting: null,
+  reportTab: 'rapport',
+  // recorder
+  mediaRecorder: null,
+  audioChunks: [],
+  timerInterval: null,
+  seconds: 0,
+  isPaused: false,
+  isRecording: false,
+  // realtime polling
+  pollingInterval: null,
+};
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', async () => {
+  state.user = sb.getUser();
+  if (state.user) {
+    await loadAll();
+    showScreen('screen-home');
+    renderHome();
+  } else {
+    showScreen('screen-login');
+  }
+  document.getElementById('loading-screen').style.display = 'none';
+});
+
+async function loadAll() {
+  const user = sb.getUser();
+  if (!user) return;
+  const uid = user.id;
+  const [cRes, pRes, mRes] = await Promise.all([
+    (await query('clients')).select('*').eq('user_id', uid).order('name', {ascending:true}).execute(),
+    (await query('projects')).select('*').eq('user_id', uid).order('created_at', {ascending:false}).execute(),
+    (await query('meetings')).select('*').eq('user_id', uid).order('meeting_date', {ascending:false}).execute(),
+  ]);
+  state.clients = cRes.data || [];
+  state.projects = pRes.data || [];
+  state.meetings = mRes.data || [];
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id, savePrev = true) {
+  if (savePrev) {
+    const cur = document.querySelector('.screen.active');
+    if (cur) state.prevScreen = cur.id;
+  }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+window.showLogin = () => showScreen('screen-login', false);
+window.showSignup = () => showScreen('screen-signup', false);
+window.goBack = () => showScreen(state.prevScreen, false);
+
+window.switchTab = (tab) => {
+  const screens = { home: 'screen-home', clients: 'screen-clients', projects: 'screen-projects', settings: 'screen-settings' };
+  loadTabData(tab);
+  showScreen(screens[tab], false);
+};
+
+async function loadTabData(tab) {
+  await loadAll();
+  if (tab === 'home') renderHome();
+  if (tab === 'clients') renderClients();
+  if (tab === 'projects') renderProjects();
+  if (tab === 'settings') renderSettings();
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+document.getElementById('btn-login').onclick = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAlert('Email et mot de passe requis', 'error');
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    await sb.signIn(email, password);
+    state.user = sb.getUser();
+    await loadAll();
+    showScreen('screen-home', false);
+    renderHome();
+  } catch(e) { showAlert(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'SE CONNECTER'; }
+};
+
+document.getElementById('btn-signup').onclick = async () => {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  if (!name || !email || !password) return showAlert('Tous les champs sont requis', 'error');
+  if (password.length < 6) return showAlert('Mot de passe trop court (6 min.)', 'error');
+  const btn = document.getElementById('btn-signup');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const d = await sb.signUp(email, password, name);
+    if (d.access_token) {
+      state.user = sb.getUser();
+      await loadAll();
+      showScreen('screen-home', false);
+      renderHome();
+    } else {
+      showAlert('Compte créé. Vérifiez votre email.', 'success');
+      showLogin();
+    }
+  } catch(e) { showAlert(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'CRÉER MON COMPTE'; }
+};
+
+window.handleSignOut = () => {
+  sb.signOut();
+  state.user = null;
+  showScreen('screen-login', false);
+};
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome() {
+  document.getElementById('home-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  const active = state.projects.filter(p => p.status === 'chantier_en_cours' || p.status === 'valide').length;
+  const reports = state.meetings.filter(m => m.status === 'finalise').length;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-reports').textContent = reports;
+  document.getElementById('stat-clients').textContent = state.clients.length;
+
+  // Projects
+  const projectsEl = document.getElementById('home-projects');
+  if (state.projects.length === 0) {
+    projectsEl.innerHTML = `<div class="empty-state"><div class="empty-icon">🏗️</div><div class="empty-title">Aucun projet</div><div class="empty-desc">Créez votre premier projet pour commencer.</div></div>`;
+  } else {
+    projectsEl.innerHTML = state.projects.slice(0,4).map(p => {
+      const cli = state.clients.find(c => c.id === p.client_id);
+      return `<div class="card" onclick="openProject('${p.id}')">
+        <div class="card-row"><div class="card-title">${p.name}</div><div class="chip ${chipClass(p.status)}">${lbl(p.status)}</div></div>
+        <div class="card-sub">${cli?.name || '—'}</div>
+        <div class="card-addr">${p.address || '—'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Recent meetings
+  const meetingsEl = document.getElementById('home-meetings');
+  const finalized = state.meetings.filter(m => m.status === 'finalise').slice(0,3);
+  document.getElementById('home-meetings-label').style.display = finalized.length ? '' : 'none';
+  meetingsEl.innerHTML = finalized.map(m => {
+    const proj = state.projects.find(p => p.id === m.project_id);
+    return `<div class="card" onclick="openReport('${m.id}')">
+      <div class="card-title">${m.title}</div>
+      <div class="card-sub">${proj?.name || '—'} · ${new Date(m.meeting_date).toLocaleDateString('fr-FR')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// CLIENTS
+// ============================================================
+function renderClients() {
+  const el = document.getElementById('clients-list');
+  if (state.clients.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Aucun client</div><div class="empty-desc">Créez votre premier client pour commencer.</div></div>`;
+    return;
+  }
+  el.innerHTML = state.clients.map(c => {
+    const initials = c.name.split(' ').map(w => w[0]).slice(0,2).join('');
+    return `<div class="card" style="display:flex;align-items:center;gap:12px;">
+      <div class="avatar">${initials}</div>
+      <div style="flex:1">
+        <div class="card-title">${c.name}</div>
+        <div class="card-sub" style="font-size:10px;text-transform:uppercase;letter-spacing:1px;">${lbl(c.client_type)}</div>
+        ${c.address ? `<div class="card-addr">${c.address}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// PROJECTS
+// ============================================================
+function renderProjects() {
+  const el = document.getElementById('projects-list');
+  if (state.projects.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Aucun projet</div><div class="empty-desc">Créez votre premier projet.</div></div>`;
+    return;
+  }
+  el.innerHTML = state.projects.map(p => {
+    const cli = state.clients.find(c => c.id === p.client_id);
+    return `<div class="card" onclick="openProject('${p.id}')">
+      <div class="card-row"><div class="card-title">${p.name}</div><div class="chip ${chipClass(p.status)}">${lbl(p.status)}</div></div>
+      <div class="card-sub">${cli?.name || '—'}</div>
+      <div class="card-addr">${p.address || '—'}</div>
+      <div class="card-footer"><span>${lbl(p.project_type)}</span><span>${p.estimated_budget ? p.estimated_budget.toLocaleString('fr-FR') + ' €' : '—'}</span></div>
+    </div>`;
+  }).join('');
+}
+
+window.openProject = (id) => {
+  state.selectedProjectId = id;
+  state.prevScreen = document.querySelector('.screen.active').id;
+  showNewMeeting(id);
+};
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings() {
+  const user = sb.getUser();
+  document.getElementById('settings-email').textContent = user?.email || '—';
+}
+
+// ============================================================
+// NEW CLIENT
+// ============================================================
+window.showNewClient = () => {
+  state.prevScreen = document.querySelector('.screen.active').id;
+  buildChips('nc-type-chips', CLIENT_TYPES, 'selectedClientType');
+  showScreen('screen-new-client');
+};
+
+window.saveClient = async () => {
+  const name = document.getElementById('nc-name').value.trim();
+  if (!name) return showAlert('Le nom est requis', 'error');
+  const btn = document.getElementById('btn-save-client');
+  btn.disabled = true; btn.textContent = '...';
+  const user = sb.getUser();
+  const { data, error } = await (await query('clients')).insert({
+    user_id: user.id, name,
+    client_type: state.selectedClientType,
+    phone: document.getElementById('nc-phone').value || null,
+    email: document.getElementById('nc-email').value || null,
+    address: document.getElementById('nc-address').value || null,
+    notes: document.getElementById('nc-notes').value || null,
+  });
+  btn.disabled = false; btn.textContent = 'ENREGISTRER';
+  if (error) return showAlert('Erreur: ' + (error.message || JSON.stringify(error)), 'error');
+  showAlert('Client créé !', 'success');
+  await loadAll();
+  goBack();
+};
+
+// ============================================================
+// NEW PROJECT
+// ============================================================
+window.showNewProject = () => {
+  state.prevScreen = document.querySelector('.screen.active').id;
+  buildChips('np-client-chips', state.clients.map(c => c.id), 'selectedClientId', id => state.clients.find(c=>c.id===id)?.name || id);
+  if (state.clients.length > 0) state.selectedClientId = state.clients[0].id;
+  buildChips('np-type-chips', PROJECT_TYPES, 'selectedProjectType');
+  buildChips('np-status-chips', PROJECT_STATUSES, 'selectedProjectStatus');
+  document.getElementById('np-start').value = new Date().toISOString().slice(0,10);
+  showScreen('screen-new-project');
+};
+
+window.saveProject = async () => {
+  const name = document.getElementById('np-name').value.trim();
+  if (!name) return showAlert('Le nom est requis', 'error');
+  if (!state.selectedClientId) return showAlert('Sélectionnez un client', 'error');
+  const user = sb.getUser();
+  const { data, error } = await (await query('projects')).insert({
+    user_id: user.id, name, client_id: state.selectedClientId,
+    address: document.getElementById('np-address').value || null,
+    project_type: state.selectedProjectType,
+    status: state.selectedProjectStatus,
+    start_date: document.getElementById('np-start').value || null,
+    end_date: document.getElementById('np-end').value || null,
+    estimated_budget: document.getElementById('np-budget').value ? parseFloat(document.getElementById('np-budget').value) : null,
+    notes: document.getElementById('np-notes').value || null,
+  });
+  if (error) return showAlert('Erreur: ' + (error.message || JSON.stringify(error)), 'error');
+  showAlert('Projet créé !', 'success');
+  await loadAll();
+  goBack();
+};
+
+// ============================================================
+// NEW MEETING
+// ============================================================
+window.showNewMeeting = (presetProjectId = null) => {
+  state.prevScreen = document.querySelector('.screen.active')?.id || 'screen-home';
+  if (presetProjectId) state.selectedProjectId = presetProjectId;
+  else if (state.projects.length > 0) state.selectedProjectId = state.projects[0].id;
+  buildChips('nm-project-chips', state.projects.map(p => p.id), 'selectedProjectId', id => state.projects.find(p=>p.id===id)?.name || id);
+  buildChips('nm-type-chips', MEETING_TYPES, 'selectedMeetingType');
+  document.getElementById('nm-date').value = new Date().toISOString().slice(0,10);
+  const proj = state.projects.find(p => p.id === state.selectedProjectId);
+  if (proj) document.getElementById('nm-location').value = proj.address || '';
+  showScreen('screen-new-meeting');
+};
+
+window.proceedToConsent = () => {
+  const title = document.getElementById('nm-title').value.trim();
+  if (!state.selectedProjectId) return showAlert('Sélectionnez un projet', 'error');
+  if (!title) return showAlert('Donnez un titre à la réunion', 'error');
+  showScreen('screen-consent');
+};
+
+// ============================================================
+// RECORDER
+// ============================================================
+window.startRecording = async () => {
+  // Créer le meeting d'abord
+  const user = sb.getUser();
+  const { data: meeting, error } = await (await query('meetings')).insert({
+    user_id: user.id,
+    project_id: state.selectedProjectId,
+    title: document.getElementById('nm-title').value.trim(),
+    meeting_type: state.selectedMeetingType,
+    meeting_date: document.getElementById('nm-date').value,
+    location: document.getElementById('nm-location').value || null,
+    participants: document.getElementById('nm-participants').value || null,
+    status: 'enregistrement',
+    quick_notes: [], marks: [],
+  });
+  if (error) return showAlert('Erreur création réunion: ' + JSON.stringify(error), 'error');
+  state.currentMeetingId = meeting.id;
+  state.audioChunks = [];
+  state.seconds = 0;
+  state.isPaused = false;
+
+  // Démarrer l'enregistrement
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+    state.mediaRecorder = new MediaRecorder(stream, { mimeType: getSupportedMimeType() });
+    state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.audioChunks.push(e.data); };
+    state.mediaRecorder.start(1000);
+    state.isRecording = true;
+
+    // Timer
+    state.timerInterval = setInterval(() => {
+      if (!state.isPaused) {
+        state.seconds++;
+        const h = Math.floor(state.seconds / 3600).toString().padStart(2,'0');
+        const m = Math.floor((state.seconds % 3600) / 60).toString().padStart(2,'0');
+        const s = (state.seconds % 60).toString().padStart(2,'0');
+        document.getElementById('timer-display').textContent = `${h}:${m}:${s}`;
+      }
+    }, 1000);
+
+    document.getElementById('timer-circle').classList.add('recording');
+    document.getElementById('timer-status').textContent = '● REC';
+    showScreen('screen-recorder');
+  } catch(e) {
+    showAlert('Erreur microphone: ' + e.message, 'error');
+    document.getElementById('recorder-error').textContent = e.message;
+    document.getElementById('recorder-error').style.display = '';
+  }
+};
+
+function getSupportedMimeType() {
+  const types = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'];
+  return types.find(t => MediaRecorder.isTypeSupported(t)) || '';
+}
+
+window.togglePause = () => {
+  if (!state.mediaRecorder) return;
+  if (state.isPaused) {
+    state.mediaRecorder.resume();
+    state.isPaused = false;
+    document.getElementById('btn-pause-resume').textContent = 'PAUSE';
+    document.getElementById('timer-circle').classList.add('recording');
+    document.getElementById('timer-status').textContent = '● REC';
+  } else {
+    state.mediaRecorder.pause();
+    state.isPaused = true;
+    document.getElementById('btn-pause-resume').textContent = 'REPRENDRE';
+    document.getElementById('timer-circle').classList.remove('recording');
+    document.getElementById('timer-status').textContent = '• PAUSE •';
+  }
+};
+
+window.confirmStop = () => {
+  if (confirm('Arrêter l\'enregistrement et lancer l\'analyse IA ?')) stopAndProcess();
+};
+
+window.cancelRecording = () => {
+  if (!confirm('Annuler l\'enregistrement ?')) return;
+  if (state.mediaRecorder) { state.mediaRecorder.stop(); state.mediaRecorder.stream.getTracks().forEach(t => t.stop()); }
+  clearInterval(state.timerInterval);
+  state.isRecording = false;
+  showScreen('screen-home', false);
+};
+
+async function stopAndProcess() {
+  clearInterval(state.timerInterval);
+  showScreen('screen-processing', false);
+
+  // Stop recorder
+  await new Promise(resolve => {
+    state.mediaRecorder.onstop = resolve;
+    state.mediaRecorder.stop();
+    state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  });
+
+  const audioBlob = new Blob(state.audioChunks, { type: state.mediaRecorder.mimeType || 'audio/webm' });
+  const ext = (state.mediaRecorder.mimeType || 'audio/webm').includes('mp4') ? 'm4a' : 'webm';
+  const user = sb.getUser();
+  const audioPath = `${user.id}/${state.currentMeetingId}.${ext}`;
+
+  try {
+    // Step 1 : upload
+    setStep(1, 'active');
+    await sb.uploadStorage('audio', audioPath, audioBlob);
+    setStep(1, 'done');
+
+    // Update meeting
+    await (await query('meetings')).eq('id', state.currentMeetingId).update({
+      audio_url: audioPath,
+      audio_size_bytes: audioBlob.size,
+      duration_seconds: state.seconds,
+      status: 'en_traitement',
+    });
+
+    setStep(2, 'active');
+
+    // Step 2-4 : Edge Function
+    await sb.invokeFunction('process-meeting', {
+      meeting_id: state.currentMeetingId,
+      audio_path: audioPath,
+      language: 'fr',
+    });
+
+    setStep(2, 'done'); setStep(3, 'done'); setStep(4, 'done');
+
+    // Poll until finalise
+    await pollMeetingStatus(state.currentMeetingId);
+
+  } catch(e) {
+    showAlert('Erreur traitement: ' + e.message, 'error');
+    await (await query('meetings')).eq('id', state.currentMeetingId).update({ status: 'erreur', error_message: e.message });
+    setTimeout(() => showScreen('screen-home', false), 3000);
+  }
+}
+
+async function pollMeetingStatus(meetingId) {
+  return new Promise((resolve) => {
+    const interval = setInterval(async () => {
+      const { data } = await (await query('meetings')).eq('id', meetingId).single().execute();
+      if (!data) return;
+      if (data.status === 'finalise') {
+        clearInterval(interval);
+        setStep(4, 'done');
+        await loadAll();
+        setTimeout(() => { openReport(meetingId); resolve(); }, 500);
+      } else if (data.status === 'erreur') {
+        clearInterval(interval);
+        showAlert(data.error_message || 'Erreur traitement', 'error');
+        setTimeout(() => showScreen('screen-home', false), 3000);
+        resolve();
+      }
+    }, 2000);
+  });
+}
+
+function setStep(num, state) {
+  const el = document.getElementById(`step-${num}`);
+  el.classList.remove('done', 'active');
+  el.classList.add(state);
+  if (state === 'done') el.querySelector('.step-num').textContent = '✓';
+}
+
+// ============================================================
+// REPORT
+// ============================================================
+window.openReport = (meetingId) => {
+  state.prevScreen = document.querySelector('.screen.active').id;
+  const meeting = state.meetings.find(m => m.id === meetingId);
+  if (!meeting) return showAlert('Réunion introuvable', 'error');
+  state.reportMeeting = meeting;
+  renderReport();
+  showScreen('screen-report');
+};
+
+function renderReport() {
+  const m = state.reportMeeting;
+  const proj = state.projects.find(p => p.id === m.project_id);
+  const cli = state.clients.find(c => c.id === proj?.client_id);
+
+  document.getElementById('report-header').innerHTML = `
+    <div class="report-tag">// COMPTE RENDU</div>
+    <div class="report-title">${m.title}</div>
+    <div class="report-meta">
+      <div class="meta-cell"><div class="meta-key">PROJET ▸</div><div class="meta-val">${proj?.name || '—'}</div></div>
+      <div class="meta-cell"><div class="meta-key">CLIENT ▸</div><div class="meta-val">${cli?.name || '—'}</div></div>
+      <div class="meta-cell"><div class="meta-key">DATE ▸</div><div class="meta-val">${new Date(m.meeting_date).toLocaleDateString('fr-FR')}</div></div>
+      <div class="meta-cell"><div class="meta-key">TYPE ▸</div><div class="meta-val">${lbl(m.meeting_type)}</div></div>
+    </div>
+    ${m.participants ? `<div style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px;"><div class="meta-key">PARTICIPANTS</div><div class="meta-val" style="font-size:13px;">${m.participants}</div></div>` : ''}
+  `;
+
+  switchReportTab(state.reportTab);
+}
+
+window.switchReportTab = (tab, el) => {
+  state.reportTab = tab;
+  document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.report-tab').forEach((t, i) => { if (['rapport','actions','transcription'][i] === tab) t.classList.add('active'); });
+
+  const m = state.reportMeeting;
+  const a = m?.ai_analysis;
+  const content = document.getElementById('report-tab-content');
+
+  if (tab === 'rapport' && a) {
+    content.innerHTML = `
+      ${section('01','Contexte de la visite',`<p class="section-text">${a.contexte}</p>`)}
+      ${listSection('02','Travaux évoqués', a.trabajos_mencionados)}
+      ${listSection('03','Décisions prises', a.decisiones_tomadas)}
+      ${listSection('04','Points techniques à vérifier', a.puntos_pendientes)}
+      ${listSection('05','Problèmes / risques', a.problemas_riesgos)}
+      ${listSection('06','Matériaux / fournitures', a.materiales_necesarios)}
+      ${section('07','Prochaine étape',`<p class="section-text">${a.proxima_etapa}</p>`)}
+      ${section('08','Observations',`<p class="section-text" style="font-style:italic">${a.observaciones}</p>`)}
+      <button class="btn btn-primary" onclick="exportPDF()" style="margin-top:8px;">📄 EXPORTER PDF</button>
+    `;
+  } else if (tab === 'actions' && a) {
+    content.innerHTML = a.acciones.length === 0 ? '<p style="color:var(--text3);font-size:13px;padding:16px;">Aucune action identifiée.</p>' :
+      a.acciones.map(act => `
+        <div class="action-card" style="border-left-color:${act.prioridad==='urgente'||act.prioridad==='alta'?'var(--red)':act.prioridad==='media'?'var(--yellow)':'var(--text3)'}">
+          <div class="action-title">${act.accion}</div>
+          <div class="action-meta">▸ ${act.responsable} · ▸ ${act.fecha_limite || 'à définir'}</div>
+          <div class="action-chips">
+            <div class="chip ${chipClass(act.prioridad)}">${lbl(act.prioridad)}</div>
+            <div class="chip ${chipClass(act.estado)}">${lbl(act.estado)}</div>
+          </div>
+        </div>`).join('');
+  } else if (tab === 'transcription') {
+    content.innerHTML = `
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:8px;">// Transcription audio · Whisper</div>
+      <div class="transcript-box"><div class="transcript-text">${m?.transcription || 'Transcription non disponible.'}</div></div>
+    `;
+  } else {
+    content.innerHTML = '<p style="color:var(--text3);font-size:13px;padding:16px;">Données non disponibles.</p>';
+  }
+};
+
+function section(num, title, body) {
+  return `<div class="report-section">
+    <div class="section-header">
+      <span class="section-num">${num}</span>
+      <span class="section-title">${title}</span>
+      <div class="section-line"></div>
+    </div>
+    ${body}
+  </div>`;
+}
+function listSection(num, title, items) {
+  const body = items.length === 0 ? '<p class="section-text">—</p>' :
+    `<ul class="section-list">${items.map(i => `<li><span class="section-text">${i}</span></li>`).join('')}</ul>`;
+  return section(num, title, body);
+}
+
+// ============================================================
+// PDF EXPORT
+// ============================================================
+window.exportPDF = () => {
+  const m = state.reportMeeting;
+  const a = m?.ai_analysis;
+  const proj = state.projects.find(p => p.id === m.project_id);
+  const cli = state.clients.find(c => c.id === proj?.client_id);
+  if (!a) return showAlert('Pas de données à exporter', 'error');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    body{font-family:sans-serif;padding:40px;color:#111;font-size:12px}
+    .hdr{background:#ff6b1a;color:white;padding:16px;margin:-40px -40px 24px -40px}
+    h1{margin:0;font-size:20px;letter-spacing:2px}h2{font-size:13px;color:#ff6b1a;border-bottom:1px solid #eee;padding-bottom:4px;margin-top:20px}
+    .meta{background:#f8f8f8;padding:12px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .mk{font-size:10px;color:#888;text-transform:uppercase}.mv{font-size:11px;font-weight:600}
+    ul{padding-left:16px}li{margin-bottom:3px}
+    table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:6px;text-align:left}td{border-bottom:1px solid #eee;padding:6px}
+    .footer{margin-top:32px;padding-top:12px;border-top:1px solid #ff6b1a;font-size:10px;color:#888}
+  </style></head><body>
+  <div class="hdr"><h1>BTP REPORT</h1><p style="margin:4px 0 0;font-size:11px">COMPTE RENDU DE ${lbl(m.meeting_type).toUpperCase()}</p></div>
+  <h1 style="font-size:16px;margin:0 0 12px">${m.title}</h1>
+  <div class="meta">
+    <div><div class="mk">Projet</div><div class="mv">${proj?.name||'—'}</div></div>
+    <div><div class="mk">Client</div><div class="mv">${cli?.name||'—'}</div></div>
+    <div><div class="mk">Date</div><div class="mv">${new Date(m.meeting_date).toLocaleDateString('fr-FR')}</div></div>
+    <div><div class="mk">Participants</div><div class="mv">${m.participants||'—'}</div></div>
+  </div>
+  <h2>1. Contexte</h2><p>${a.contexte}</p>
+  <h2>2. Travaux évoqués</h2><ul>${a.trabajos_mencionados.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h2>3. Décisions prises</h2><ul>${a.decisiones_tomadas.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h2>4. Points à vérifier</h2><ul>${a.puntos_pendientes.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h2>5. Problèmes / risques</h2><ul>${a.problemas_riesgos.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h2>6. Matériaux</h2><ul>${a.materiales_necesarios.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h2>7. Actions</h2>
+  <table><thead><tr><th>Action</th><th>Responsable</th><th>Échéance</th><th>Priorité</th></tr></thead><tbody>
+  ${a.acciones.map(act=>`<tr><td>${act.accion}</td><td>${act.responsable}</td><td>${act.fecha_limite||'—'}</td><td>${act.prioridad}</td></tr>`).join('')}
+  </tbody></table>
+  <h2>8. Prochaine étape</h2><p>${a.proxima_etapa}</p>
+  <h2>9. Observations</h2><p><em>${a.observaciones}</em></p>
+  <div class="footer">BTP Report · Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+};
+
+// ============================================================
+// CHIPS BUILDER
+// ============================================================
+function buildChips(containerId, options, stateKey, labelFn = lbl) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = options.map(opt => `
+    <div class="chip-sel ${state[stateKey] === opt ? 'selected' : ''}" onclick="selectChip('${stateKey}','${opt}','${containerId}')">
+      ${labelFn(opt)}
+    </div>`).join('');
+}
+
+window.selectChip = (stateKey, value, containerId) => {
+  state[stateKey] = value;
+  document.querySelectorAll(`#${containerId} .chip-sel`).forEach((el, i) => {
+    const opts = { selectedClientType: CLIENT_TYPES, selectedProjectType: PROJECT_TYPES, selectedProjectStatus: PROJECT_STATUSES, selectedMeetingType: MEETING_TYPES, selectedProjectId: state.projects.map(p=>p.id), selectedClientId: state.clients.map(c=>c.id) };
+    const arr = opts[stateKey] || [];
+    el.classList.toggle('selected', arr[i] === value || state.projects.find(p=>p.id===arr[i])?.id === value || state.clients.find(c=>c.id===arr[i])?.id === value);
+  });
+  // Simpler re-render
+  const labelFns = {
+    selectedProjectId: id => state.projects.find(p=>p.id===id)?.name || id,
+    selectedClientId: id => state.clients.find(c=>c.id===id)?.name || id,
+  };
+  const opts = { selectedClientType: CLIENT_TYPES, selectedProjectType: PROJECT_TYPES, selectedProjectStatus: PROJECT_STATUSES, selectedMeetingType: MEETING_TYPES, selectedProjectId: state.projects.map(p=>p.id), selectedClientId: state.clients.map(c=>c.id) };
+  buildChips(containerId, opts[stateKey] || [], stateKey, labelFns[stateKey] || lbl);
+};
+
+// ============================================================
+// ALERT
+// ============================================================
+function showAlert(msg, type='success') {
+  const existing = document.querySelector('.alert');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ============================================================
+// EXPOSE GLOBALS
+// ============================================================
+window.showNewMeeting = showNewMeeting;
+window.showNewProject = showNewProject;
+window.showNewClient = showNewClient;
+window.openReport = openReport;
+window.renderHome = renderHome;
+</script>
+</body>
+</html>
