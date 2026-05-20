@@ -746,8 +746,17 @@ const sb = {
     });
     const d = await r.json();
     if (d.error) throw new Error(d.error_description || d.error);
+    if (!d.access_token) throw new Error('Token manquant');
     localStorage.setItem('sb_token', d.access_token);
-    localStorage.setItem('sb_user', JSON.stringify(d.user));
+    // Extraire user du token si d.user est absent
+    let userObj = d.user;
+    if (!userObj || !userObj.id) {
+      try {
+        const payload = JSON.parse(atob(d.access_token.split('.')[1]));
+        userObj = { id: payload.sub, email: payload.email || email };
+      } catch {}
+    }
+    localStorage.setItem('sb_user', JSON.stringify(userObj));
     return d;
   },
   async signUp(email, password, fullName) {
@@ -764,7 +773,23 @@ const sb = {
     return d;
   },
   signOut() { localStorage.removeItem('sb_token'); localStorage.removeItem('sb_user'); },
-  getUser() { try { return JSON.parse(localStorage.getItem('sb_user')); } catch { return null; } },
+  getUser() {
+    try {
+      const token = localStorage.getItem('sb_token');
+      if (!token) return null;
+      // Verificar que el token no está expirado
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem('sb_token');
+          localStorage.removeItem('sb_user');
+          return null;
+        }
+      } catch {}
+      const user = JSON.parse(localStorage.getItem('sb_user'));
+      return user;
+    } catch { return null; }
+  },
   async from(table) { return new SbQuery(table, this); },
   async rpc(fn, params) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
@@ -1107,11 +1132,17 @@ window.showNewClient = () => {
 };
 
 window.saveClient = async () => {
+  const user = sb.getUser();
+  console.log('saveClient user:', JSON.stringify(user));
+  if (!user || !user.id) {
+    showAlert('Session expirée. Reconnectez-vous.', 'error');
+    setTimeout(() => { showScreen('screen-login', false); }, 1500);
+    return;
+  }
   const name = document.getElementById('nc-name').value.trim();
   if (!name) return showAlert('Le nom est requis', 'error');
   const btn = document.getElementById('btn-save-client');
   btn.disabled = true; btn.textContent = '...';
-  const user = sb.getUser();
   const { data, error } = await (await query('clients')).insert({
     user_id: user.id, name,
     client_type: state.selectedClientType,
@@ -1141,10 +1172,15 @@ window.showNewProject = () => {
 };
 
 window.saveProject = async () => {
+  const user = sb.getUser();
+  if (!user || !user.id) {
+    showAlert('Session expirée. Reconnectez-vous.', 'error');
+    setTimeout(() => { showScreen('screen-login', false); }, 1500);
+    return;
+  }
   const name = document.getElementById('np-name').value.trim();
   if (!name) return showAlert('Le nom est requis', 'error');
   if (!state.selectedClientId) return showAlert('Sélectionnez un client', 'error');
-  const user = sb.getUser();
   const { data, error } = await (await query('projects')).insert({
     user_id: user.id, name, client_id: state.selectedClientId,
     address: document.getElementById('np-address').value || null,
